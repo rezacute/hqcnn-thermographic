@@ -1,0 +1,47 @@
+name: hqcnn-thermographic
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - pillow
+  - opencv-python
+  - pytorch
+  - torchvision
+  - tqdm
+  - pyyaml
+  - rich
+  - click
+  - typer
+  - fastapi
+  - uvicorn
+  - pydantic
+  - python-multipart
+  - jinja2
+  - plotly
+  - orjson
+  - h5py
+  - joblib
+  - pytest
+  - pytest-cov
+  - black
+  - pip:
+    - albumentations
+    - timm
+    - onnx
+    - onnxruntime-gpu
+    - qiskit
+    - qiskit-machine-learning
+
+# Alternative: Use system Python3 with pip:
+#   pip install -r requirements.txt
+# See requirements.txt for pip-based installation
+

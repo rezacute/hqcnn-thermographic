@@ -1,0 +1,68 @@
+# Thermo Classifier Configuration
+
+## Model Configuration
+model:
+  name: "hq-cnn"
+  domain: "medical"  # or "industrial"
+  quantum_enhanced: true
+  n_qubits: 8
+  base_channels: 64
+
+## Training Configuration
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  early_stopping_patience: 10
+  gradient_clip: 1.0
+
+## Data Configuration
+data:
+  image_size: [224, 224]
+  normalization: "minmax"
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  augmentation:
+    horizontal_flip: 0.5
+    vertical_flip: 0.3
+    random_rotate90: 0.5
+    shift_scale_rotate: 0.5
+    brightness_contrast: 0.5
+    gauss_noise: 0.3
+
+## Domain Classes
+domains:
+  medical:
+    - "normal"
+    - "benign"
+    - "malignant"
+  industrial:
+    - "normal"
+    - "overheating"
+    - "electrical_fault"
+    - "structural_defect"
+    - "thermal_bridge"
+    - "moisture"
+
+## API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false
+  log_level: "info"
+
+## Quantum Configuration
+quantum:
+  backend: "cuda-quantum"
+  simulator: "statevector"
+  n_shots: 1000
+  optimization_level: 1
+
+## Export Configuration
+export:
+  formats: ["onnx", "torchscript"]
+  input_shape: [1, 1, 224, 224]
+  opset_version: 14

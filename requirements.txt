@@ -1,0 +1,55 @@
+# Thermo Classifier Requirements
+# Install with: pip install -r requirements.txt
+
+# Core
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+
+# Scientific
+scipy>=1.10.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.18.0
+Pillow>=10.0.0
+
+# Image Processing
+opencv-python>=4.8.0
+albumentations>=1.3.0
+
+# ML/Training
+tqdm>=4.65.0
+timm>=0.9.0
+
+# CLI
+click>=8.1.0
+typer>=0.9.0
+rich>=13.0.0
+pyyaml>=6.0
+
+# API
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+jinja2>=3.1.0
+
+# Serialization
+orjson>=3.9.0
+h5py>=3.10.0
+joblib>=1.3.0
+onnx>=1.15.0
+onnxruntime-gpu>=1.16.0
+
+# Testing/Dev
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+
+# Quantum (optional)
+qiskit>=0.45.0
+qiskit-machine-learning>=0.7.0
