@@ -3,6 +3,7 @@
 > **Comparative Analysis of Quantum-Inspired, Parameterized Quantum Circuit, and Classical Approaches for Breast Thermography Classification Using CUDA Quantum**
 >
 > Riza Alaudin Syah, Haza Nuzly Bin Abdul Hamed — *Universiti Teknologi Malaysia*
+> DR. Irwan A. Kautsar — *Universitas Muhammadiyah Sidoarjo, Indonesia*
 
 The first hybrid quantum-classical CNN applied to breast infrared thermography, and the first three-way comparison of classical, quantum-inspired, and real parameterized quantum circuit (PQC) approaches on a medical imaging task. Evaluated on the [DMR-IR benchmark dataset](https://visual.ic.uff.br/dmi) (1,522 breast thermograms).
 
