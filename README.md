@@ -5,191 +5,155 @@
 > Riza Alaudin Syah, Haza Nuzly Bin Abdul Hamed — *Universiti Teknologi Malaysia*
 > DR. Irwan A. Kautsar — *Universitas Muhammadiyah Sidoarjo, Indonesia*
 
-The first hybrid quantum-classical CNN applied to breast infrared thermography, and the first three-way comparison of classical, quantum-inspired, and real parameterized quantum circuit (PQC) approaches on a medical imaging task. Evaluated on the [DMR-IR benchmark dataset](https://visual.ic.uff.br/dmi) (1,522 breast thermograms).
+A controlled three-way comparison of classical, quantum-inspired, and real parameterized quantum circuit (PQC) approaches on breast infrared thermography, evaluated on the [DMR-IR benchmark](https://visual.ic.uff.br/dmi) (1,522 thermograms, 56 patients).
 
 ## Key Results
 
-| Model | Test Accuracy | F1 Score | AUC | Training Time |
-|-------|:------------:|:--------:|:---:|:------------:|
-| Classical ResNet18 | **92.08%** | 92.03% | 0.97 | 5 min |
-| HQ-CNN (Quantum-Inspired) | 91.25% | 91.18% | 0.96 | 10 min |
-| CUDA Quantum PQC (8-qubit) | 90.42% | 90.38% | 0.94 | 30 min |
+| Variant | Test Accuracy | AUC | Sens | Spec |
+|---------|:------------:|:---:|:----:|:----:|
+| Classical ResNet18 | **77.0 ± 4.9%** | 0.957 | 69% | 100% |
+| Quantum-Inspired (QI) | 76.8 ± 8.4% | 0.934 | 69% | 100% |
+| PQC n=6 | 76.9 ± 4.3% | 0.948 | — | — |
+| PQC n=8 | 71.2 ± 6.5% | 0.964 | 61% | 100% |
+| MLP-twin (classical control) | 71.3 ± 2.7% | 0.910 | 62% | 99% |
+| PQC no-CNOT (ablation) | 72.7 ± 4.6% | 0.950 | 64% | 100% |
 
-All three models are **statistically equivalent** within a 1.66% margin on 240 test images (within the 95% confidence interval of ±3.4%).
+All variants evaluated on **5 seeds**, patient-level test split of **482 images** (360 malignant, 122 normal).
 
-## Contributions
-
-1. **First hybrid quantum CNN for breast infrared thermography** on the DMR-IR benchmark
-2. **First three-way comparison** of classical, quantum-inspired, and real PQC approaches sharing the same backbone and classifier
-3. **Three critical PQC training fixes** yielding a cumulative **54.49% accuracy improvement** (from 35.93% to 90.42%):
-   - **π/4 encoding scaling** — prevents rotation saturation and barren plateaus
-   - **BatchNorm** — resolves feature scale mismatch between quantum measurements ([-1,1]) and classical features
-   - **Calibrated dropout** — regularization tuned for quantum parameter counts
-4. **Qubit-scaling analysis** showing optimal expressivity at 8 qubits (~23 training samples per quantum parameter)
-5. **Evidence that quantum-inspired layers match real PQCs** at 3× lower computational cost
+**Main findings:**
+- Classical and QI are statistically tied (Δ = +0.17 pp, McNemar p = 0.85)
+- PQC n=8 is statistically indistinguishable from its MLP-twin replacement (Δ = −0.08 pp, p = 0.95) — the circuit provides no measurable benefit over a classical tanh map
+- Entanglement provides no benefit: PQC ≈ PQC-noCNOT (p = 0.18)
+- Optimal qubit count is n = 6, not n = 8
+- Smaller encoding scale (π/64) outperforms the canonical π/4 by 7.1 pp — the PQC in this regime reduces to a classical linear map
 
 ## Architecture
 
-All three variants share a common **ResNet18 backbone** (pretrained on ImageNet) and **classifier head**:
+All variants share a **ResNet18 backbone** (ImageNet pretrained, fine-tuned) outputting a 512-dim GAP feature vector and a shared classifier head: `Linear(544→256) → ReLU → BN → Dropout → Linear(256→2)`.
 
 ```
 Input (224×224 thermal image)
     │
     ▼
-┌─────────────────────┐
-│  ResNet18 Backbone   │  → h_backbone ∈ R^512
-│  (pretrained)        │
-└─────────┬───────────┘
-          │
-    ┌─────┴─────┐
-    │           │
-    ▼           ▼
-┌────────┐  ┌────────────────────────┐
-│Classical│  │  Quantum Layer          │  → h_quantum ∈ R^32
-│(skip)  │  │  (Quantum-Inspired OR   │
-│        │  │   CUDA Quantum PQC)     │
-└───┬────┘  └──────────┬─────────────┘
-    │                  │
-    └────────┬─────────┘
-             ▼
-    ┌─────────────────┐
-    │  Classifier Head │  Linear(544→256) → ReLU → BN → Dropout → Linear(256→2)
-    │  y = f([h_bb;    │
-    │       h_quantum])│
-    └─────────────────┘
-             │
-             ▼
-      Normal / Malignant
+┌─────────────────────────┐
+│  ResNet18 Backbone        │  → h ∈ R^512
+│  (ImageNet pretrained)    │
+└───────────┬───────────────┘
+            │
+      ┌─────┴─────┐
+      ▼           ▼
+┌──────────┐  ┌──────────────────────────────┐
+│ Classical │  │  Quantum Branch               │
+│ (skip)   │  │  tanh projection → PQC/MHA   │
+└────┬─────┘  └──────────────┬───────────────┘
+     │                        │
+     └────────────┬───────────┘
+                  ▼
+       ┌──────────────────────┐
+       │  Classifier Head      │  Linear(544→256) → ReLU → BN → Dropout → Linear(256→2)
+       └──────────────────────┘
+                  │
+                  ▼
+          Normal / Malignant
 ```
 
-### Quantum-Inspired Layer (HQ-CNN)
-Projects 512-dim features to 8 simulated qubits via tanh, applies **4-head self-attention** (×2 layers) with learnable coupling matrices, and outputs `[x; |x|]` projected to 32 dimensions.
-
-### CUDA Quantum PQC
-Encodes features as **π/4 · tanh(Wh + b)** rotation angles on 8 qubits, applies **2 variational layers** (RY-RZ single-qubit rotations + CNOT entangling ladder with ring closure), measures **15 observables** (8 Pauli-Z + 7 ZZ correlations), and projects through Linear(15→32) + BatchNorm.
-
-## Critical PQC Training Fixes
-
-The initial CUDA Quantum PQC achieved only **35.93%** test accuracy. Three fixes were essential:
-
-| Fix Applied | Test Accuracy | Δ |
-|-------------|:------------:|:--:|
-| Baseline (broken) | 35.93% | — |
-| + Encoding (π/4) + BatchNorm | 81.81% | +45.88% |
-| + Regularization (dropout 0.6) | 87.92% | +6.11% |
-| + 8 qubits (from 4) | 90.42% | +2.50% |
-| **Total improvement** | | **+54.49%** |
+**Six evaluated variants:**
+- `classical` — GAP feature → classifier (no quantum branch)
+- `qi` — GAP → tanh → 2-layer 4-head self-attention → Linear → 32
+- `pqc` — GAP → tanh → n-qubit PQC (RY/RZ + CNOT ring) → 2n−1 expectations → Linear → BN → 32
+- `pqc_noent` — same as pqc, no CNOTs (product-state ablation)
+- `mlp_twin` — same architecture as pqc but circuit replaced by classical `tanh(A·φ + a)` map
+- `mha` — 2-layer 4-head multi-head self-attention over spatial feature map
 
 ## Dataset
 
-**DMR-IR** (Database for Mastology Research with Infrared Images) — 1,522 breast infrared thermograms from the Visual Lab, Universidade Federal Fluminense, Brazil.
+**DMR-IR** (Database for Mastology Research with Infrared Images, Silva et al. 2014) — 1,522 breast infrared thermograms from 56 patients.
 
-| Split | Images |
-|-------|:------:|
-| Train | 1,090 |
-| Validation | 192 |
-| Test | 240 |
+Patient-level split (zero overlap between splits):
 
-**Classes:** Normal, Malignant (binary classification)
+| Split | Malignant pts | Normal pts | Total pts | Images |
+|-------|:-----------:|:---------:|:---------:|:------:|
+| Train | 20 | 11 | **31** | 840 |
+| Validation | 5 | 2 | **7** | 200 |
+| Test | 15 | 3 | **18** | 482 |
 
-**Preprocessing:** Resize to 224×224, ImageNet normalization, standard augmentation (flip, rotation, color jitter, affine). No breast segmentation or GAN augmentation — ensuring a fair controlled comparison.
+Images resized to 224×224, ImageNet normalization, augmentation: horizontal flip (p=0.5), rotation ±20°, brightness/contrast 0.2, translation 10%. No breast segmentation or synthetic augmentation.
+
+## PQC Implementation
+
+The PQC is exactly simulated (statevector, no shots, no noise) via PyTorch autograd. Verified against dense NumPy matrices, Qiskit Statevector, and CUDA-Q — all 12 checks pass with maximum error < 10⁻¹².
+
+```
+Encoding:       φ = α · tanh(W·h + b)          (α = encoding scale)
+Variational:   2 layers of RY(θ₁)·RZ(θ₂) per qubit + CNOT ladder (ring closure)
+Measurement:   ⟨Z_k⟩ (k=0..n-1) + ⟨Z_k·Z_{k+1}⟩ (k=0..n-2)  →  2n−1 features
+```
 
 ## Installation
 
 ```bash
-# Create conda environment
 conda env create -f environment.yml
 conda activate hqcnn-thermographic
-
-# Install package
 pip install -e .
 ```
 
 ## Quick Start
 
-### CLI Usage
-
 ```bash
-# Train the HQ-CNN model
-thermo-classifier train --domain medical --data /path/to/data --epochs 30
+# Train classical baseline
+python train.py --data dataset/dmrir2 --variant classical --seed 0 --epochs 30
 
-# Predict on a thermal image
-thermo-classifier predict --domain medical --image thermal.png --model model.pt
+# Train PQC (8 qubits, π/4 encoding)
+python train.py --data dataset/dmrir2 --variant pqc --n-qubits 8 --enc-scale pi/4 --seed 0
 
-# Start API server
-thermo-classifier serve --model model.pt --domain medical --port 8000
+# Train quantum-inspired
+python train.py --data dataset/dmrir2 --variant qi --seed 0
+
+# Run full grid (all variants × 5 seeds)
+python run_grid.py --data dataset/dmrir2 --runs runs --grid full --seeds 5
+
+# Aggregate into paper tables and figures
+python aggregate.py --runs runs --out results
 ```
-
-### Python API
-
-```python
-from thermo_classifier import ThermalClassifier
-
-# Load model
-classifier = ThermalClassifier(
-    domain='medical',
-    checkpoint='model.pt'
-)
-
-# Predict
-result = classifier.predict(thermal_image)
-print(result['predicted_class'], result['confidence'])
-```
-
-## Training Configuration
-
-| Parameter | Value |
-|-----------|-------|
-| Optimizer | AdamW |
-| Backbone LR | 1×10⁻⁵ |
-| Quantum layer LR | 1×10⁻² |
-| Classifier LR | 1×10⁻⁴ |
-| Scheduler | Cosine annealing |
-| Batch size | 32 |
-| Max epochs | 30 |
-| Loss | Cross-entropy + label smoothing (0.1) |
-| Weight decay | 8×10⁻⁴ |
-| GPU | Tesla T4 (16 GB) |
 
 ## Project Structure
 
 ```
 hqcnn-thermographic/
-├── src/
-│   └── thermo_classifier/
-│       ├── models/         # HQ-CNN, PQC, and classical architectures
-│       ├── data/           # DMR-IR dataset loaders
-│       ├── training/       # Training loop with differential LR
-│       ├── inference/      # Prediction pipeline
-│       ├── evaluation/     # Metrics (accuracy, F1, AUC, confusion matrix)
-│       ├── api/            # FastAPI REST service
-│       ├── cli/            # CLI entry point
-│       ├── utils/          # Utilities
-│       └── export/         # ONNX / TorchScript export
-├── configs/                # YAML configuration files
-├── tests/                  # Unit tests
-├── train_hq_cnn.py         # Standalone HQ-CNN training script
-├── train_baseline.py       # Classical ResNet18 baseline
-└── hqcnn-6pages.pdf        # Research paper
+├── train.py              # Single-run training script
+├── run_grid.py           # Full grid runner (all variants × seeds)
+├── aggregate.py          # Aggregate results into tables + figures
+├── pqc_torch.py          # PQC statevector simulator (verified < 1e-12)
+├── models.py             # All 6 model variants
+├── data.py               # Patient-level dataset loader
+├── verify_simulator.py   # Simulator verification suite
+├── paper/                # LaTeX paper + figures
+│   ├── main.tex
+│   └── visualization_*.jpeg
+├── results/              # Generated tables and figures
+│   ├── numbers.tex       # Paper-ready \\def values
+│   ├── tab_main.tex
+│   └── predictions_seed*.csv
+└── runs/                 # All run outputs (metrics.json, predictions.csv)
 ```
 
 ## Requirements
 
 - Python 3.9+
-- PyTorch with CUDA support
-- CUDA-capable GPU (Tesla T4 or equivalent)
-- NVIDIA CUDA Quantum (for real PQC variant; optional — quantum-inspired layer works without it)
+- PyTorch with CUDA
+- NumPy, Pandas, Matplotlib, Seaborn
+- scikit-learn (for metrics and ROC/CM)
+- CUDA-capable GPU (RTX / T4 / A100)
 
 ## Citation
 
-If you use this work, please cite:
-
 ```bibtex
 @article{syah2026hqcnn,
-  title={Comparative Analysis of Quantum-Inspired, Parameterized Quantum Circuit, 
-         and Classical Approaches for Breast Thermography Classification Using CUDA Quantum},
-  author={Syah, Riza Alaudin and Hamed, Haza Nuzly Bin Abdul},
-  institution={Faculty of Computing, Universiti Teknologi Malaysia},
+  title={Comparative Analysis of Quantum-Inspired, Parameterized Quantum Circuit,
+         and Classical Approaches for Breast Thermography Classification},
+  author={Syah, Riza Alaudin and Hamed, Haza Nuzly Bin Abdul and
+          Kautsar, Irwan Alnarus},
+  institution={Universiti Teknologi Malaysia},
   year={2026}
 }
 ```
