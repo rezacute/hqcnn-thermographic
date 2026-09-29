@@ -32,8 +32,7 @@ from data import CachedImages, build_cache
 from models import VARIANTS, HybridNet
 from pqc_torch import PQCBranch, simulate_state
 
-SCALES = {"pi": math.pi, "pi/2": math.pi / 2, "pi/4": math.pi / 4, "pi/8": math.pi / 8,
-           "pi/16": math.pi / 16, "pi/32": math.pi / 32, "pi/64": math.pi / 64}
+SCALES = {"pi": math.pi, "pi/2": math.pi / 2, "pi/4": math.pi / 4, "pi/8": math.pi / 8}
 
 
 # ---------------------------------------------------------------- metrics (no sklearn needed)

@@ -1,0 +1,575 @@
+{
+  "meta": {
+    "layers": 2,
+    "bins": 75,
+    "seed": 2026,
+    "pairs": 5000,
+    "mw_samples": 1000,
+    "grad_samples": 2000,
+    "draws": 10,
+    "inputs": 400,
+    "torch": "2.14.0+cu130"
+  },
+  "per_n": {
+    "2": {
+      "n": 2,
+      "circuit_params": 10,
+      "cnots": 4,
+      "expressibility": {
+        "kl": 0.007761504832029682,
+        "frame_ratio_1": 1.0112510487973574,
+        "frame_ratio_2": 1.019057902417524,
+        "mean_fidelity": 0.25281276219933935,
+        "haar_mean_fidelity": 0.25,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.39980893170833587,
+        "sd": 0.26976034923752973,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.14793271505832672,
+        "sd": 0.13910897753478646,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.253345751285553,
+        "sd": 0.27956827233293846,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.19010442549180684,
+        "var_global_parity": 0.11119988484500494,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.010530004560752291,
+        "sd_over_draws": 0.0009415902173292569,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.4193731532465894,
+        "sd_over_draws": 0.013901972363356389,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          2,
+          1,
+          1
+        ],
+        "mean_weight": 1.3333333333333333,
+        "analytic_var_theta0_pi4": 0.009363013205502813,
+        "analytic_var_theta0_pi": 0.4166666666666667
+      },
+      "seconds": 0.1
+    },
+    "4": {
+      "n": 4,
+      "circuit_params": 20,
+      "cnots": 8,
+      "expressibility": {
+        "kl": 0.004044390960067787,
+        "frame_ratio_1": 0.988073008642254,
+        "frame_ratio_2": 0.9788197369702109,
+        "mean_fidelity": 0.061754563040140875,
+        "haar_mean_fidelity": 0.0625,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.8361253477931022,
+        "sd": 0.09151001471409202,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.3848748815655708,
+        "sd": 0.12779256162486652,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.6297109640240669,
+        "sd": 0.15529126957959205,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.04499528057160425,
+        "var_global_parity": 0.0319925183889167,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.015412823605829237,
+        "sd_over_draws": 0.0007402986219835614,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.17111099500841945,
+        "sd_over_draws": 0.010831660925041092,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          3,
+          3,
+          2,
+          2,
+          2,
+          3,
+          4
+        ],
+        "mean_weight": 2.7142857142857144,
+        "analytic_var_theta0_pi4": 0.014394356094855407,
+        "analytic_var_theta0_pi": 0.16964285714285715
+      },
+      "seconds": 0.2
+    },
+    "6": {
+      "n": 6,
+      "circuit_params": 30,
+      "cnots": 12,
+      "expressibility": {
+        "kl": 0.0015996887018192316,
+        "frame_ratio_1": 0.9979197434561152,
+        "frame_ratio_2": 1.0307554196556548,
+        "mean_fidelity": 0.0155924959915018,
+        "haar_mean_fidelity": 0.015625,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9163845753868421,
+        "sd": 0.05517037848768754,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.5238337653080624,
+        "sd": 0.12333873017865138,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7211590178012848,
+        "sd": 0.11644151044840449,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.014806582098764206,
+        "var_global_parity": 0.009075922304749197,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.016817615899307733,
+        "sd_over_draws": 0.0006037160227313567,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.07528779839101422,
+        "sd_over_draws": 0.00585050132754949,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          4,
+          5,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mean_weight": 4.0,
+        "analytic_var_theta0_pi4": 0.0162927797405342,
+        "analytic_var_theta0_pi": 0.07528409090909091
+      },
+      "seconds": 0.6
+    },
+    "8": {
+      "n": 8,
+      "circuit_params": 40,
+      "cnots": 16,
+      "expressibility": {
+        "kl": 0.0012092815185769296,
+        "frame_ratio_1": 1.0069232826476262,
+        "frame_ratio_2": 1.088172914288277,
+        "mean_fidelity": 0.00393329407284229,
+        "haar_mean_fidelity": 0.00390625,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9324360481649637,
+        "sd": 0.04409613412567759,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.6260561217069626,
+        "sd": 0.11316876235742054,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7564153534770012,
+        "sd": 0.10731293016622906,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.007647823982268535,
+        "var_global_parity": 0.0024043972912612195,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.01704432281334029,
+        "sd_over_draws": 0.0007566248916493347,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.03811485120249268,
+        "sd_over_draws": 0.0015559823850207028,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          5,
+          7,
+          6,
+          6,
+          5,
+          5,
+          4,
+          4,
+          4,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "mean_weight": 5.266666666666667,
+        "analytic_var_theta0_pi4": 0.016447130912675845,
+        "analytic_var_theta0_pi": 0.037760416666666664
+      },
+      "seconds": 1.9
+    },
+    "10": {
+      "n": 10,
+      "circuit_params": 50,
+      "cnots": 20,
+      "expressibility": {
+        "kl": 0.0008440186552547477,
+        "frame_ratio_1": 1.0155109345610152,
+        "frame_ratio_2": 1.1732326892946328,
+        "mean_fidelity": 0.0009917098970322414,
+        "haar_mean_fidelity": 0.0009765625,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9351091431736945,
+        "sd": 0.03948397752159537,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.7086793218493461,
+        "sd": 0.09985679260728969,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7585892325401307,
+        "sd": 0.10252238867226264,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.007865419774313374,
+        "var_global_parity": 0.0006819588841343562,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.01641832516312105,
+        "sd_over_draws": 0.000547444023348496,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.02272996608841792,
+        "sd_over_draws": 0.00124170830210109,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          6,
+          9,
+          8,
+          8,
+          7,
+          7,
+          6,
+          6,
+          5,
+          5,
+          5,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "mean_weight": 6.526315789473684,
+        "analytic_var_theta0_pi4": 0.01566375878509391,
+        "analytic_var_theta0_pi": 0.021844161184210526
+      },
+      "seconds": 6.7
+    },
+    "12": {
+      "n": 12,
+      "circuit_params": 60,
+      "cnots": 24,
+      "expressibility": {
+        "kl": 1.3428228084805365e-24,
+        "frame_ratio_1": 1.01054330467314,
+        "frame_ratio_2": 1.3662260151856527,
+        "mean_fidelity": 0.0002467146739924658,
+        "haar_mean_fidelity": 0.000244140625,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9369252034624417,
+        "sd": 0.03487773219709627,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.777154253065586,
+        "sd": 0.07976245624703134,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7665957438250381,
+        "sd": 0.10191463289560744,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.005756656316101994,
+        "var_global_parity": 0.000182165242549014,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.015603229822444942,
+        "sd_over_draws": 0.0007029589379229511,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.015621112342692403,
+        "sd_over_draws": 0.0017388861070041786,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          7,
+          11,
+          10,
+          10,
+          9,
+          9,
+          8,
+          8,
+          7,
+          7,
+          6,
+          6,
+          6,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "mean_weight": 7.782608695652174,
+        "analytic_var_theta0_pi4": 0.014427554933150942,
+        "analytic_var_theta0_pi": 0.014531674592391304
+      },
+      "seconds": 34.2
+    },
+    "14": {
+      "n": 14,
+      "circuit_params": 70,
+      "cnots": 28,
+      "expressibility": {
+        "kl": 3.123102272637268e-96,
+        "frame_ratio_1": 1.019242178508942,
+        "frame_ratio_2": 1.5561135075785713,
+        "mean_fidelity": 6.220960562188367e-05,
+        "haar_mean_fidelity": 6.103515625e-05,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9386595743128232,
+        "sd": 0.0333470654982577,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.8243410302656038,
+        "sd": 0.06474843996650292,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7715022930332593,
+        "sd": 0.0896212134641449,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.006151411723448194,
+        "var_global_parity": 5.4083000261388944e-05,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.013625279776078403,
+        "sd_over_draws": 0.0005785108385810985,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.011810994000967887,
+        "sd_over_draws": 0.0008676012543463238,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          8,
+          13,
+          12,
+          12,
+          11,
+          11,
+          10,
+          10,
+          9,
+          9,
+          8,
+          8,
+          7,
+          7,
+          7,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "mean_weight": 9.037037037037036,
+        "analytic_var_theta0_pi4": 0.013024764434996791,
+        "analytic_var_theta0_pi": 0.010834870515046295
+      },
+      "seconds": 204.9
+    },
+    "16": {
+      "n": 16,
+      "circuit_params": 80,
+      "cnots": 32,
+      "expressibility": {
+        "kl": 0.0,
+        "frame_ratio_1": 0.9826813883512164,
+        "frame_ratio_2": 1.43763761900937,
+        "mean_fidelity": 1.4994528020495856e-05,
+        "haar_mean_fidelity": 1.52587890625e-05,
+        "pairs": 5000
+      },
+      "entanglement_random": {
+        "mean": 0.9424697944782674,
+        "sd": 0.029022673904180205,
+        "samples": 1000
+      },
+      "entanglement_init_pi4": {
+        "mean": 0.8603992073982955,
+        "sd": 0.04903655934543752,
+        "samples": 1000
+      },
+      "entanglement_init_pi": {
+        "mean": 0.7668826853856444,
+        "sd": 0.08627796383073838,
+        "samples": 1000
+      },
+      "gradient": {
+        "var_local_Z0": 0.0057903237027149,
+        "var_global_parity": 1.4829417906302733e-05,
+        "samples": 2000
+      },
+      "features_init_pi4": {
+        "mean_readout_variance": 0.011786822266375951,
+        "sd_over_draws": 0.0004273640435702141,
+        "draws": 10,
+        "inputs": 400
+      },
+      "features_init_pi": {
+        "mean_readout_variance": 0.009737083237436373,
+        "sd_over_draws": 0.000773147653748585,
+        "draws": 10,
+        "inputs": 400
+      },
+      "light_cone": {
+        "weights": [
+          9,
+          15,
+          14,
+          14,
+          13,
+          13,
+          12,
+          12,
+          11,
+          11,
+          10,
+          10,
+          9,
+          9,
+          8,
+          8,
+          8,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "mean_weight": 10.290322580645162,
+        "analytic_var_theta0_pi4": 0.011618142465564849,
+        "analytic_var_theta0_pi": 0.008754114950856855
+      },
+      "seconds": 875.0
+    }
+  }
+}
