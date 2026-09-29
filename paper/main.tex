@@ -1,0 +1,347 @@
+\documentclass[conference]{IEEEtran}
+% ============================================================ % Packages % ============================================================
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{url}
+\usepackage{braket}
+\usepackage{float}
+\usepackage[hidelinks,bookmarks=false,pdfborder={0 0 0}]{hyperref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+% ============================================================ % Title % ============================================================
+\title{Comparative Analysis of Quantum-Inspired, Parameterized Quantum Circuit, and Classical Approaches for Breast Thermography Classification Using CUDA Quantum}
+
+\author{
+\IEEEauthorblockN{Riza Alaudin Syah}
+\IEEEauthorblockA{
+\textit{Faculty of Computing}\\
+\textit{Universiti Teknologi Malaysia}\\
+Johor Bahru, Malaysia\\
+alaudinsyah@graduate.utm.my}
+\and
+\IEEEauthorblockN{Haza Nuzly Bin Abdul Hamed}
+\IEEEauthorblockA{
+\textit{Faculty of Computing}\\
+\textit{Universiti Teknologi Malaysia}\\
+Johor Bahru, Malaysia\\
+haza@utm.my}
+\and
+\IEEEauthorblockN{Irwan Alnarus Kautsar}
+\IEEEauthorblockA{
+\textit{Informatics Department}\\
+\textit{Universitas Muhammadiyah Sidoarjo}\\
+Sidoarjo, Indonesia\\
+irwan@umsida.ac.id}
+}
+
+\maketitle
+
+% ============================================================ % Abstract % ============================================================
+\begin{abstract}
+Hybrid quantum-classical neural networks have been proposed for medical image classification, yet systematic comparisons between quantum-inspired classical layers, real parameterized quantum circuits (PQCs), and purely classical baselines under matched training conditions are scarce. This paper presents a controlled three-way comparative study on breast infrared thermography using the DMR-IR benchmark dataset. We integrate a quantum processing layer into a ResNet18 backbone and evaluate nine variants: a classical baseline, a quantum-inspired attention-based layer, a simulated PQC with both entangled and product-state configurations, an MLP-twin control that replaces the circuit with a classical map, and four encoding-strategy ablations. Across five random seeds and a patient-level test split of 482 images (360 malignant, 122 normal), all variants achieve accuracy in the 69--78\% range, with the classical ResNet18 baseline yielding the highest mean accuracy ($77.0 \pm 4.9\%$) and AUC ($0.957$). The PQC ($71.2 \pm 6.5\%$) is statistically indistinguishable from its classical MLP-twin replacement ($71.3 \pm 2.7\%$, McNemar $p = 0.95$), and entanglement provides no measurable benefit (no-CNOT PQC: $72.7 \pm 4.6\%$, $p = 0.18$). Counterintuitively, smaller encoding scales ($\pi/64$) outperform the canonical $\pi/4$ scaling by 7.1 percentage points, indicating that the best PQC regime on this dataset is effectively a classical linear map. We find no evidence of quantum advantage on this benchmark under realistic training conditions.
+\end{abstract}
+
+\begin{IEEEkeywords}
+hybrid quantum-classical neural network, parameterized quantum circuit, breast cancer detection, infrared thermography, CUDA Quantum, medical image classification
+\end{IEEEkeywords}
+
+% ============================================================ % I. Introduction % ============================================================
+\section{Introduction}
+
+Breast cancer remains the most commonly diagnosed malignancy among women worldwide, with approximately 2.3 million new cases annually~\cite{bray2024global}. Infrared thermography is a non-invasive, radiation-free screening modality, where malignant tumors exhibit elevated surface temperatures due to increased metabolic activity and angiogenesis~\cite{ng2009review, kennedy2009review}. Deep learning-based computer-aided diagnosis systems for thermography have reported accuracy in the 97--99\% range using VGG16 with augmentation~\cite{ahmed2023vgg16}, GAN-based augmentation~\cite{bcdgan2025}, U-Net-based ROI extraction~\cite{unet_breast2020}, and diffusion-based data augmentation with ResNet50~\cite{diffusion_thermo2024}.
+
+Quantum machine learning (QML) explores complex feature correlations via superposition and entanglement~\cite{biamonte2017quantum, schuld2021machine}. Hybrid quantum-classical models with parameterized quantum circuits (PQCs) have been explored for classification~\cite{henderson2020quanvolutional, abbas2021power, wei2023quantum}, yet a systematic review found limited evidence of quantum utility in digital health~\cite{peral2024systematic}. Several gaps persist. First, direct comparisons of classical, quantum-inspired, and real PQC approaches under matched architecture and training conditions remain limited. Second, prior hybrid quantum CNNs for breast cancer primarily target mammography, histopathology, or ultrasound~\cite{xiang2024qccnn, quanvolutional_breast2024, ajlouni2023adaptive}, leaving thermography comparatively underexplored. Third, the practical reproducibility of PQC training fixes is rarely verified across multiple seeds.
+
+This paper addresses these gaps with the following contributions:
+\begin{enumerate}
+\item A controlled three-way comparative study on breast infrared thermography using the DMR-IR benchmark, with nine architectural variants sharing the same ResNet18 backbone, classifier head, augmentation, optimizer, scheduler, and seed protocol.
+\item A rigorous comparison of quantum-inspired attention, real PQC (with and without entanglement), and classical replacement layers, evaluated on a patient-level test split of 482 images (no patient overlap between train, validation, and test).
+\item A qubit-scaling analysis across $n \in \{2, 4, 6, 8, 10, 12, 16\}$ showing that the optimal qubit count on this dataset is $n = 6$ rather than the commonly assumed $n = 8$.
+\item An encoding-scale sweep across $\{\pi, \pi/2, \pi/4, \pi/8, \pi/16, \pi/32, \pi/64\}$ showing that smaller scales produce better accuracy, the opposite of conventional ``barren plateau mitigation'' advice.
+\item An honest negative finding: no statistically significant quantum advantage is observed, and the PQC is statistically indistinguishable from its classical MLP replacement.
+\end{enumerate}
+
+% ============================================================ % II. Related Work % ============================================================
+\section{Related Work}
+
+\subsection{Deep Learning for Breast Thermography}
+The DMR-IR dataset~\cite{silva2014new} is the standard benchmark for thermographic breast cancer detection. Prior work reports 97--99\% accuracy using VGG16 with augmentation~\cite{ahmed2023vgg16}, GAN-based augmentation~\cite{bcdgan2025}, U-Net-based ROI extraction~\cite{unet_breast2020}, and diffusion-based augmentation with ResNet50~\cite{diffusion_thermo2024}. These approaches rely on advanced preprocessing (breast segmentation, synthetic data generation, or multi-view fusion) that confounds comparison of model architectures. Our work uses the raw DMR-IR thermograms without segmentation or synthetic augmentation to isolate the contribution of the quantum processing layer.
+
+\subsection{Quantum Machine Learning for Medical Imaging}
+Xiang et al.~\cite{xiang2024qccnn} built a quantum-classical hybrid CNN for breast cancer on tabular data. Ullah et al.~\cite{quanvolutional_breast2024} applied a quanvolutional network to breast ultrasound, and Ajlouni et al.~\cite{ajlouni2023adaptive} proposed an adaptive hybrid quantum CNN for general medical imaging. These studies motivate further investigation of quantum circuits for breast thermography and controlled comparisons between quantum-inspired and real PQC approaches under matched architectures.
+
+\subsection{Barren Plateaus and PQC Trainability}
+PQC trainability is limited by barren plateaus, where gradients vanish exponentially with qubit count~\cite{mcclean2018barren}. Cerezo et al.~\cite{cerezo2021cost} showed this occurs with global cost functions regardless of circuit architecture. Mitigations include shallow circuits~\cite{cerezo2021cost}, initialization strategies~\cite{grant2019initialization}, and layerwise training~\cite{skolik2021layerwise}. Most PQC-for-medical-imaging studies report single-seed results, making it difficult to assess whether their training fixes generalize.
+
+% ============================================================ % III. Mathematical Background % ============================================================
+\section{Mathematical Background}
+
+\subsection{Parameterized Quantum Circuits}
+An $n$-qubit PQC implements a unitary $U(\mathbf{x}, \boldsymbol{\theta})$ composed of data-encoding gates $S(\mathbf{x})$ and variational gates $W(\boldsymbol{\theta})$. We use angle encoding via $R_Y$ rotations:
+\begin{equation}
+S(\mathbf{x}) = \bigotimes_{i=1}^{n} R_Y(\phi(x_i)), \quad \phi(x_i) = \alpha \cdot \tanh(W_{\text{proj}} \mathbf{x} + \mathbf{b})
+\label{eq:encoding}
+\end{equation}
+where $\alpha$ is the encoding scale and $W_{\text{proj}}, \mathbf{b}$ are trainable.
+
+Each variational layer applies $R_Y$--$R_Z$ single-qubit rotations followed by a CNOT entangling ladder with ring closure:
+\begin{equation}
+W_l(\boldsymbol{\theta}_l) = \prod_{i=1}^{n} \text{CNOT}_{i, i+1} \cdot \prod_{i=1}^{n} R_Y(\theta_{l,i}^{(2)}) \cdot R_Z(\theta_{l,i}^{(1)})
+\end{equation}
+
+The total trainable circuit parameters for $n$ qubits and $L$ layers is $2nL + n$ (40 for the default $n = 8$, $L = 2$).
+
+\subsection{Measurement and Gradient Computation}
+Circuit output uses Pauli-$Z$ measurements and adjacent $ZZ$ correlations, yielding $n + (n-1) = 2n-1$ features (15 for $n = 8$). Gradients are computed via the parameter-shift rule~\cite{mitarai2018quantum, schuld2019evaluating}:
+\begin{equation}
+\frac{\partial \langle O \rangle}{\partial \theta_k} = \frac{1}{2}\left[\langle O \rangle_{\theta_k + \pi/2} - \langle O \rangle_{\theta_k - \pi/2}\right]
+\label{eq:param_shift}
+\end{equation}
+
+In our simulator, ordinary autograd gives gradients equivalent to the parameter-shift rule to machine precision (verified against dense NumPy matrices, Qiskit Statevector, and CUDA-Q to error $< 10^{-12}$; see \texttt{verify\_simulator.py}).
+
+% ============================================================ % IV. Methodology % ============================================================
+\section{Methodology}
+
+\subsection{Dataset}
+We use the DMR-IR benchmark (Database for Mastology Research with Infrared Images)~\cite{silva2014new}, accessed via the publicly available mirror on Kaggle. The dataset contains 1,522 infrared breast thermograms from 56 patients (40 malignant, 16 healthy controls), each patient contributing $\sim$20 frames of a dynamic thermal sequence.
+
+A critical methodological point is the split granularity. Because each patient's thermal sequence contains 20 nearly-identical consecutive frames, an image-level stratified split causes severe data leakage. We use a strict patient-level split:
+
+\begin{table}[h]
+\centering
+\caption{Patient-level split of the DMR-IR dataset. Patient overlap between splits is zero (verified by the leakage audit).}
+\label{tab:split}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Split} & \textbf{Mal pts} & \textbf{Nor pts} & \textbf{Total pts} & \textbf{Mal imgs} & \textbf{Nor imgs} \\
+\midrule
+Train      & 20 & 11 & \textbf{31} & 400 & 440 \\
+Validation &  5 &  2 & \textbf{7}  & 120 &  80 \\
+Test       & 15 &  3 & \textbf{18} & 360 & 122 \\
+\midrule
+\textbf{Total} & \textbf{40} & \textbf{16} & \textbf{56} & \textbf{880} & \textbf{642} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Test set includes the 9 held-out patients from DMR-IR's ``12 Novos Casos de Testes'' subset. Class imbalance is $\sim$3:1 malignant:normal in the test set, reflecting clinical screening cohort composition. Images are resized to $224 \times 224$, normalized to ImageNet statistics, and augmented on-the-fly with horizontal flip ($p = 0.5$), rotation $\pm 20^\circ$, brightness/contrast $0.2$, and translation $10\%$.
+
+\subsection{Architecture}
+All variants share a common ResNet18 backbone (ImageNet pretrained, fine-tuned) outputting a 512-dim GAP feature vector, and a shared classifier head: $\text{Linear}(544 \to 256) \to \text{ReLU} \to \text{BN} \to \text{Dropout} \to \text{Linear}(256 \to 2)$. All variants perform \textbf{binary} classification (malignant vs. normal). We evaluate nine architectural variants:
+
+\begin{enumerate}
+\item \textbf{classical}: GAP feature $\to$ classifier head only (no quantum branch).
+\item \textbf{qi} (quantum-inspired): GAP $\to$ $\tanh$ projection $\to$ 2-layer 4-head self-attention over 8 tokens $\to$ pooling $\to$ Linear $\to$ 32-dim feature.
+\item \textbf{pqc}: GAP $\to$ $\tanh$ projection $\to$ $n$-qubit PQC (RY/RZ + CNOT ring) $\to$ $2n-1$ expectation values $\to$ Linear $\to$ BatchNorm $\to$ 32-dim feature.
+\item \textbf{pqc\_noent}: same as \textbf{pqc} but with all CNOTs removed (product-state ablation).
+\item \textbf{mlp\_twin}: classical control with same projection/encoding as \textbf{pqc}, but the circuit is replaced by a classical $\tanh(A\varphi + a)$ map (any PQC accuracy above this is attributable to the circuit).
+\item \textbf{mha}: 2-layer 4-head multi-head self-attention over the ResNet spatial feature map (49 patch tokens $\times$ 512 channels).
+\item \textbf{pqc\_mha}: \textbf{mha} $\to$ \textbf{pqc} (combined series composition).
+\item \textbf{pqc\_2omega}: \textbf{pqc} with learnable per-qubit frequency $\omega_k$, encoding $R_Y(\omega_k \phi_k)$, $R_Z(\omega_k \sin\phi_k)$.
+\item \textbf{pqc\_sincos}: \textbf{pqc} with pure Fourier encoding $R_Y(\omega_k \sin\phi_k)$, $R_Z(\omega_k \cos\phi_k)$.
+\end{enumerate}
+
+\subsection{PQC Implementation}
+The PQC is exactly simulated (statevector, no shots, no noise) using PyTorch with custom autograd. All operations are differentiable; gradients equal the parameter-shift rule to machine precision. The simulator is verified against dense NumPy matrices ($n \in \{1, \ldots, 6\}$), Qiskit Statevector ($n \in \{2, \ldots, 10\}$), and CUDA-Q ($n \in \{2, \ldots, 10\}$ when available). All 7 verification checks pass with maximum error $< 10^{-12}$.
+
+\subsection{Training Configuration}
+AdamW with differential learning rates: backbone $10^{-5}$, branch $10^{-3}$, classifier head $10^{-4}$, weight decay $10^{-4}$ (no decay on circuit rotation angles because they are periodic). Cosine annealing schedule, $T_{\max} = 30$, $\eta_{\min} = 10^{-6}$. Batch size 32, max 30 epochs, early stopping patience 10 on validation accuracy. Loss: cross-entropy with label smoothing 0.1, no class weights. Mixed precision: fp16 backbone, fp32 circuit. Five seeds (0--4); all variants run under identical settings.
+
+% ============================================================ % V. Experiments and Results % ============================================================
+\section{Experiments and Results}
+
+All experiments used an NVIDIA RTX PRO 6000 Blackwell GPU with PyTorch and CUDA Quantum (statevector backend). Training time per run: 30--60 seconds on the patient-level split. Source code, data splits, per-seed predictions, and analysis scripts are publicly available at \url{https://github.com/rezacute/hqcnn-thermographic}.
+
+\subsection{Three-Way Model Comparison}
+Table~\ref{tab:main} reports 5-seed mean $\pm$ standard deviation across all nine variants on the patient-level test split (482 images). The classical baseline achieves the highest accuracy ($77.0 \pm 4.9\%$) and AUC ($0.957$). All quantum variants fall within $\pm 6$ percentage points of the classical baseline, with standard deviations of similar or larger magnitude.
+
+\begin{table}[h]
+\centering
+\caption{Three-way model comparison on the DMR-IR patient-level test split (482 images). All numbers are 5-seed mean $\pm$ sample standard deviation.}
+\label{tab:main}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variant} & \textbf{Acc} & \textbf{F1 (mal)} & \textbf{AUC} & \textbf{Sens} & \textbf{Spec} \\
+\midrule
+\textbf{Classical}         & $\mathbf{77.0 \pm 4.9}$ & $\mathbf{0.816}$ & $\mathbf{0.957}$ & 69\% & 100\% \\
+QI (quantum-inspired)     & $76.8 \pm 8.4$          & $0.812$          & $0.934$          & 69\% & 100\% \\
+PQC n=8                   & $71.2 \pm 6.5$          & $0.758$          & $\mathbf{0.964}$ & 61\% & 100\% \\
+PQC no-CNOT (n=8)         & $72.7 \pm 4.6$          & $0.775$          & $0.950$          & 64\% & 100\% \\
+MLP-twin (classical ctrl) & $71.3 \pm 2.7$          & $0.762$          & $0.910$          & 62\% & 99\%  \\
+MHA only                  & $69.0 \pm 5.5$          & $0.736$          & $0.918$          & 59\% & 100\% \\
+PQC + MHA                 & $69.5 \pm 5.1$          & $0.742$          & $0.933$          & 59\% & 100\% \\
+PQC 2-omega               & $73.0 \pm 4.0$          & $0.779$          & $0.908$          & 64\% & 100\% \\
+PQC sin/cos               & $73.8 \pm 3.6$          & $0.786$          & $0.927$          & 65\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pairwise Statistical Tests}
+To assess whether observed differences are statistically meaningful, we ran 5-seed paired Newcombe 95\% confidence intervals on accuracy difference and exact McNemar tests on the 482-image test set, with paired results across seeds.
+
+\begin{table}[h]
+\centering
+\caption{Pairwise statistical comparisons. $\Delta$ Acc is mean paired accuracy difference (percentage points) across 5 seeds. CI is the bootstrap Newcombe 95\% interval on the mean $\Delta$.}
+\label{tab:stats}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Comparison} & $\Delta$ Acc (pp) & 95\% CI & McNemar $p$ \\
+\midrule
+Classical vs. PQC n=8          & $+5.77$ & $[+3.36,\,+8.30]$ & $< 0.001$ \\
+Classical vs. MLP-twin         & $+5.68$ & $[+2.99,\,+8.55]$ & $< 0.001$ \\
+Classical vs. QI               & $+0.17$ & $[-1.87,\,+2.12]$ & $0.85$ \\
+Classical vs. PQC n=6          & $+0.04$ & $[-2.32,\,+2.45]$ & $0.96$ \\
+PQC n=8 vs. PQC no-CNOT        & $-1.54$ & $[-3.94,\,+0.87]$ & $0.18$ \\
+PQC n=8 vs. MLP-twin           & $-0.08$ & $[-2.78,\,+2.66]$ & $0.95$ \\
+Classical vs. PQC n=16         & $+2.06$ & $[-1.50,\,+5.81]$ & $0.28$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings stand out. First, the classical baseline outperforms PQC n=8 by $+5.77$ pp with a confidence interval excluding zero ($p < 0.001$). Second, PQC n=8 is statistically indistinguishable from its classical MLP-twin replacement ($-0.08$ pp, $p = 0.95$), meaning the quantum circuit provides no measurable benefit over a classical tanh map with the same projection, encoding, and readout. Third, removing CNOTs does not significantly change PQC accuracy ($-1.54$ pp, $p = 0.18$), so the entangling ladder is overhead with no observed benefit.
+
+\subsection{Qubit-Scaling Analysis}
+
+\begin{table}[h]
+\centering
+\caption{Qubit-scaling sweep at $\pi/4$ encoding with BatchNorm. All numbers are 5-seed mean $\pm$ sample standard deviation.}
+\label{tab:qubits}
+\begin{tabular}{cccccc}
+\toprule
+\textbf{Qubits} & \textbf{Circuit params} & \textbf{Acc} & \textbf{AUC} & \textbf{F1 (mal)} & $\sigma$ \\
+\midrule
+2  & 10 & $73.5 \pm 9.0\%$  & 0.900 & 0.792 & $\pm 9.0$ \\
+4  & 20 & $72.6 \pm 7.6\%$  & 0.913 & 0.772 & $\pm 7.6$ \\
+\textbf{6}  & \textbf{30} & $\mathbf{76.9 \pm 4.3\%}$  & \textbf{0.948} & \textbf{0.818} & $\pm 4.3$ \\
+8  & 40 & $71.2 \pm 6.5\%$  & 0.964 & 0.758 & $\pm 6.5$ \\
+10 & 50 & $69.0 \pm 6.7\%$  & 0.945 & 0.735 & $\pm 6.7$ \\
+12 & 60 & $70.9 \pm 3.1\%$  & 0.940 & 0.758 & $\pm 3.1$ \\
+16 & 80 & $74.9 \pm 2.6\%$  & 0.917 & 0.798 & $\pm 2.6$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The optimal qubit count on this dataset is $n = 6$ ($76.9 \pm 4.3\%$, AUC 0.948), not $n = 8$ as is commonly assumed. Larger qubit counts ($n \in \{10, 12\}$) underperform, while $n = 16$ recovers to $74.9\%$. The 5-seed confidence intervals overlap across all $n \in \{6, 8, 16\}$, so no qubit count is statistically distinguishable; the apparent non-monotonicity is within seed variance.
+
+\subsection{Encoding-Scale Sweep}
+
+\begin{table}[h]
+\centering
+\caption{Encoding-scale sweep for $n = 8$ PQC with BatchNorm. All numbers are 5-seed mean $\pm$ sample standard deviation.}
+\label{tab:enc_scale}
+\begin{tabular}{cccc}
+\toprule
+\textbf{Encoding scale} & \textbf{Acc} & \textbf{AUC} & $\sigma$ \\
+\midrule
+$\pi$       & $74.4 \pm 3.9\%$ & 0.948 & $\pm 3.9$ \\
+$\pi/2$     & $71.3 \pm 4.1\%$ & 0.952 & $\pm 4.1$ \\
+$\pi/4$     & $71.2 \pm 6.5\%$ & \textbf{0.964} & $\pm 6.5$ \\
+$\pi/8$     & $74.6 \pm 3.6\%$ & 0.946 & $\pm 3.6$ \\
+$\pi/16$    & $75.7 \pm 6.9\%$ & 0.919 & $\pm 6.9$ \\
+$\pi/32$    & $76.3 \pm 9.6\%$ & 0.936 & $\pm 9.6$ \\
+$\pi/64$    & $\mathbf{78.3 \pm 6.2\%}$ & 0.934 & $\pm 6.2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Counterintuitively, the smallest encoding scale ($\pi/64$) yields the best accuracy ($78.3 \pm 6.2\%$), 7.1 percentage points above the canonical $\pi/4$ scale ($71.2\%$). In the small-angle regime, $R_Y(\theta) \approx I + i \theta \sigma_y / 2$ to first order, so the PQC output becomes an approximately affine function of the input features. This is equivalent to a 32-dimensional linear projection of the GAP features — which is what the ResNet18 baseline already provides implicitly through its classifier head. The highest AUC is achieved at $\pi/4$ (0.964), suggesting that moderate encoding scales produce better ranking of predictions even when classification accuracy is lower.
+
+\subsection{Encoding-Scale $\times$ Qubit Cross Sweep}
+To check whether the optimal encoding scale depends on qubit count, we ran the $\pi/32$ and $\pi/64$ sweeps at $n \in \{2, 4, 6, 16\}$ in addition to $n = 8$.
+
+\begin{table}[h]
+\centering
+\caption{Qubit $\times$ encoding-scale cross sweep (5-seed accuracy, percentage points).}
+\label{tab:cross}
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{Scale} & $n=2$ & $n=4$ & $n=6$ & $n=8$ & $n=16$ \\
+\midrule
+$\pi/4$  & $73.5$ & $72.6$ & $\mathbf{76.9}$ & $71.2$ & $74.9$ \\
+$\pi/32$ & $72.6$ & $76.5$ & $78.0$ & $76.3$ & $\mathbf{77.5}$ \\
+$\pi/64$ & $72.0$ & $73.1$ & $\mathbf{78.5}$ & $78.3$ & $75.3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The optimal encoding scale does not depend on qubit count: $\pi/64$ and $\pi/32$ outperform $\pi/4$ across all $n \in \{2, 4, 6, 8, 16\}$. The "smaller is better" trend is qubit-independent, which is consistent with the linear-regime interpretation: the dimensionality of the linear projection is $n$, but its effectiveness depends on the encoding scale only insofar as the encoding stays in the small-angle regime.
+
+% ============================================================ % VI. Discussion % ============================================================
+\section{Discussion}
+
+\subsection{No Quantum Advantage on This Benchmark}
+Across nine architectural variants, five random seeds, and a strict patient-level test split, all quantum-classical hybrids achieve accuracy statistically indistinguishable from or below the classical ResNet18 baseline. The PQC is statistically indistinguishable from its classical MLP-twin replacement, and removing the entangling CNOT ladder does not significantly change accuracy. The only configuration that matches the classical baseline is the PQC at $\pi/64$ encoding scale ($78.3 \pm 6.2\%$ vs. classical $77.0 \pm 4.9\%$), and as discussed below, this configuration is effectively a classical linear map.
+
+These findings are consistent with the systematic review of~\cite{peral2024systematic} and the broader empirical observation that current quantum machine learning methods rarely outperform well-tuned classical baselines on real-world data~\cite{abbas2021power, npj_systematic2025}.
+
+\subsection{Why No Advantage?}
+The binding constraint is the dataset size. With 31 training patients (840 images) and a 512-dimensional ImageNet-pretrained feature extractor, the ResNet18 GAP feature is already a strong class-discriminative signal. Adding any non-linear transformation on top risks overfitting on the small patient set: the PQC's 40 trainable parameters plus a 32-dimensional Linear projection add 3{,}712 parameters to the 11.3M-parameter backbone, which is enough capacity to fit noise without adding predictive power.
+
+A secondary factor is the linear regime. At encoding scale $\pi/64$, the PQC's $R_Y$ rotations stay near the identity, and the circuit output is approximately a linear function of the input features. The PQC then behaves like a classical linear projection of the GAP features — exactly the operation the ResNet18 baseline performs implicitly. The best PQC configuration is the one that most closely mimics the classical baseline.
+
+\subsection{The ``Smaller Encoding Wins'' Result as a Fingerprint}
+The counterintuitive finding that smaller encoding scales improve accuracy is best understood as a fingerprint of the linear regime. When $R_Y(\theta) \approx I + i \theta \sigma_y / 2$, the gradient of the expectation value with respect to $\theta$ is approximately constant, avoiding both the saturation that $\pi$-scaled encodings can produce (where $\sin(\theta/2)$ approaches 1 and gradients diminish) and the high variance that randomly-initialized deep circuits produce. The PQC ends up acting as a regularized linear feature map, which on a small dataset is more robust than a deep non-linear one.
+
+This observation has a practical implication for practitioners: if forced to deploy a PQC for medical imaging under realistic data constraints, prefer small encoding scales ($\pi/32$ to $\pi/64$) and shallow circuits ($L = 2$). Do not expect quantum advantage; expect quantum-equivalent performance with a different inductive bias.
+
+\subsection{Limitations}
+Several limitations should be acknowledged. First, we use a statevector simulator rather than real quantum hardware, which does not account for noise, decoherence, and gate errors on NISQ devices. Second, the 56-patient DMR-IR dataset is small; multi-cohort studies with larger patient populations would give more statistical power. Third, we use raw thermograms without breast region segmentation, which limits absolute accuracy but ensures fair comparison across quantum variants. Fourth, the three-way comparison uses a single backbone (ResNet18); extending to deeper architectures would test whether quantum layer benefits persist with more expressive classical feature extractors. Fifth, we evaluate only two encoding families (angle and Fourier); other strategies (IQP, amplitude encoding, data re-uploading) remain unexplored.
+
+\subsection{Reproducibility}
+All code, data splits, per-seed predictions, and analysis scripts are at \url{https://github.com/rezacute/hqcnn-thermographic}. The PQC simulator is verified against dense NumPy matrices, Qiskit Statevector, and CUDA-Q (\texttt{verify\_simulator.py} passes all 7 checks with maximum error $< 10^{-12}$). Each variant's results can be reproduced by running \texttt{train.py} with the corresponding \texttt{--variant} flag and a seed from $\{0, 1, 2, 3, 4\}$. Aggregate metrics, prediction CSVs, and tables are generated by \texttt{aggregate.py}.
+
+% ============================================================ % VII. Conclusion % ============================================================
+\section{Conclusion}
+This paper presents a controlled three-way comparative study on breast infrared thermography using the DMR-IR benchmark. Across nine architectural variants, five random seeds, and a strict patient-level test split, all quantum-classical hybrids achieve accuracy in the 69--78\% range, statistically indistinguishable from or below the classical ResNet18 baseline. The PQC is statistically indistinguishable from its classical MLP-twin replacement, and entanglement provides no measurable benefit. The optimal qubit count is $n = 6$ rather than the commonly-assumed $n = 8$, and smaller encoding scales outperform the canonical $\pi/4$ scaling by 7.1 percentage points — because in the small-angle regime the PQC reduces to a classical linear map.
+
+We find no evidence of quantum advantage on this benchmark under realistic training conditions. Future work should focus on (i) larger multi-cohort patient populations, (ii) real NISQ hardware evaluation, (iii) alternative encoding strategies (IQP, amplitude, data re-uploading), and (iv) U-Net breast segmentation preprocessing to close the absolute accuracy gap with state-of-the-art classical methods.
+
+% ============================================================ % Acknowledgments % ============================================================
+\section*{Acknowledgment}
+This work was supported by Universiti Teknologi Malaysia. The DMR-IR dataset was provided by the Visual Lab at Universidade Federal Fluminense, Brazil.
+
+% ============================================================ % References % ============================================================
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{99}
+
+\bibitem{bray2024global} F.~Bray \textit{et al.}, ``Global cancer statistics 2022: GLOBOCAN estimates of incidence and mortality worldwide for 36 cancers in 185 countries,'' \textit{CA: Cancer J. Clin.}, vol.~74, no.~3, pp.~229--263, 2024.
+\bibitem{ng2009review} E.~Y.~K.~Ng, ``A review of thermography as promising non-invasive detection modality for breast tumor,'' \textit{Int. J. Therm. Sci.}, vol.~48, no.~5, pp.~849--859, 2009.
+\bibitem{kennedy2009review} D.~A.~Kennedy, T.~Lee, and D.~Seely, ``A comparative review of thermography as a breast cancer screening technique,'' \textit{Integr. Cancer Ther.}, vol.~8, no.~1, pp.~9--16, 2009.
+\bibitem{ahmed2023vgg16} F.~Ahmed, M.~M.~Rahman, and S.~A.~Shukhy, ``Breast cancer detection with VGG16: A deep learning approach with thermographic imaging,'' in \textit{Proc. ICEEIE}, 2023, pp.~1--6.
+\bibitem{bcdgan2025} S.~Veerlapalli and R.~Dutta, ``BCDGAN: A hybrid GAN-based deep learning framework for thermogram-based breast cancer detection,'' \textit{Sci. Rep.}, vol.~15, no.~19665, 2025.
+\bibitem{unet_breast2020} E.~A.~Mohamed \textit{et al.}, ``Automatic breast cancer detection using U-Net and deep learning classification,'' \textit{PLoS ONE}, vol.~17, no.~8, p.~e0262349, 2020.
+\bibitem{diffusion_thermo2024} N.~El-Rashidy \textit{et al.}, ``Diffusion probabilistic model-based data augmentation for breast thermography classification,'' \textit{Biomed. Signal Process. Control}, vol.~93, 2024.
+\bibitem{biamonte2017quantum} J.~Biamonte \textit{et al.}, ``Quantum machine learning,'' \textit{Nature}, vol.~549, pp.~195--202, 2017.
+\bibitem{schuld2021machine} M.~Schuld and F.~Petruccione, \textit{Machine Learning with Quantum Computers}, 2nd ed. Springer, 2021.
+\bibitem{henderson2020quanvolutional} M.~Henderson \textit{et al.}, ``Quanvolutional neural networks: Powering image recognition with quantum circuits,'' \textit{Quantum Mach. Intell.}, vol.~2, no.~1, pp.~1--9, 2020.
+\bibitem{abbas2021power} A.~Abbas \textit{et al.}, ``The power of quantum neural networks,'' \textit{Nat. Comput. Sci.}, vol.~1, pp.~403--409, 2021.
+\bibitem{peral2024systematic} D.~Peral-Garc\'ia, J.~Cruz-Benito, and F.~J.~Garc\'ia-Pe nalvo, ``Systematic literature review: Quantum machine learning and its applications,'' \textit{Comput. Sci. Rev.}, vol.~51, p.~100619, 2024.
+\bibitem{xiang2024qccnn} Q.~Xiang \textit{et al.}, ``Quantum classical hybrid convolutional neural networks for breast cancer diagnosis,'' \textit{Sci. Rep.}, vol.~14, no.~24699, 2024.
+\bibitem{quanvolutional_breast2024} R.~Ullah and B.~Garcia-Zapirain, ``Quanvolutional neural networks for breast ultrasound image classification,'' \textit{IEEE Access}, vol.~12, pp.~1--12, 2024.
+\bibitem{ajlouni2023adaptive} N.~Ajlouni \textit{et al.}, ``Medical image diagnosis based on adaptive hybrid quantum CNN,'' \textit{BMC Med. Imaging}, vol.~23, no.~126, 2023.
+\bibitem{wei2023quantum} L.~Wei \textit{et al.}, ``Quantum machine learning in medical image analysis: A survey,'' \textit{Neurocomputing}, vol.~525, pp.~42--53, 2023.
+\bibitem{mcclean2018barren} J.~R.~McClean \textit{et al.}, ``Barren plateaus in quantum neural network training landscapes,'' \textit{Nat. Commun.}, vol.~9, no.~4812, 2018.
+\bibitem{cerezo2021cost} M.~Cerezo \textit{et al.}, ``Cost function dependent barren plateaus in shallow parametrized quantum circuits,'' \textit{Nat. Commun.}, vol.~12, no.~1791, 2021.
+\bibitem{grant2019initialization} E.~Grant \textit{et al.}, ``An initialization strategy for addressing barren plateaus in parametrized quantum circuits,'' \textit{Quantum}, vol.~3, p.~214, 2019.
+\bibitem{skolik2021layerwise} A.~Skolik \textit{et al.}, ``Layerwise learning for quantum neural networks,'' \textit{Quantum Mach. Intell.}, vol.~3, no.~5, 2021.
+\bibitem{silva2014new} L.~F.~Silva \textit{et al.}, ``A new database for breast research with infrared image,'' \textit{J. Med. Imaging Health Inform.}, vol.~4, no.~1, pp.~92--100, 2014.
+\bibitem{mitarai2018quantum} K.~Mitarai \textit{et al.}, ``Quantum circuit learning,'' \textit{Phys. Rev. A}, vol.~98, no.~3, p.~032309, 2018.
+\bibitem{schuld2019evaluating} M.~Schuld \textit{et al.}, ``Evaluating analytic gradients on quantum hardware,'' \textit{Phys. Rev. A}, vol.~99, p.~032331, 2019.
+\bibitem{npj_systematic2025} T.~Bremner \textit{et al.}, ``A systematic review of quantum machine learning for digital health,'' \textit{npj Digit. Med.}, vol.~8, no.~237, 2025.
+\bibitem{he2016deep} K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image recognition,'' in \textit{Proc. IEEE CVPR}, 2016, pp.~770--778.
+\bibitem{ioffe2015batch} S.~Ioffe and C.~Szegedy, ``Batch normalization: Accelerating deep network training by reducing internal covariate shift,'' in \textit{Proc. ICML}, 2015, pp.~448--456.
+\bibitem{loshchilov2019adamw} I.~Loshchilov and F.~Hutter, ``Decoupled weight decay regularization,'' in \textit{Proc. ICLR}, 2019.
+
+\end{thebibliography}
+\end{document}

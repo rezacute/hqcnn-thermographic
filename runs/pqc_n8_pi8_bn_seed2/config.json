@@ -1,0 +1,58 @@
+{
+  "data": "dataset/dmrir2",
+  "runs": "runs",
+  "variant": "pqc",
+  "n_qubits": 8,
+  "n_layers": 2,
+  "enc_scale": "pi/8",
+  "no_bn": false,
+  "seed": 2,
+  "epochs": 30,
+  "patience": 10,
+  "batch_size": 32,
+  "lr_backbone": 1e-05,
+  "lr_branch": 0.001,
+  "lr_head": 0.0001,
+  "weight_decay": 0.0001,
+  "dropout": 0.5,
+  "label_smoothing": 0.1,
+  "grad_clip": 1.0,
+  "negative": "normal",
+  "positive": "malignant",
+  "image_size": 224,
+  "cache_dir": "cache",
+  "workers": 4,
+  "device": "cuda",
+  "no_amp": false,
+  "no_pretrained": false,
+  "save_checkpoint": false,
+  "permutations": 20,
+  "run": "pqc_n8_pi8_bn_seed2",
+  "enc_scale_value": 0.39269908169872414,
+  "parameters": {
+    "total": 11321778,
+    "backbone": 11176512,
+    "head": 140546,
+    "branch": 4720,
+    "circuit": 40
+  },
+  "param_groups": [
+    "backbone",
+    "head",
+    "branch",
+    "circuit"
+  ],
+  "torch": "2.13.0+cu130",
+  "python": "3.11.15",
+  "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "split_sizes": {
+    "train": 840,
+    "val": 200,
+    "test": 482
+  },
+  "split_positives": {
+    "train": 400,
+    "val": 120,
+    "test": 360
+  }
+}

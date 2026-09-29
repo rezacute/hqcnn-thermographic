@@ -1,0 +1,23 @@
+{
+  "run": "classical_seed2",
+  "best_epoch": 6,
+  "epochs_run": 16,
+  "test_loss": 0.49915510416030884,
+  "test": {
+    "n": 482,
+    "correct": 367,
+    "accuracy": 0.7614107883817427,
+    "sensitivity": 0.6805555555555556,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8402777777777778,
+    "f1_malignant": 0.8099173553719008,
+    "f1_macro": 0.7447915467667303,
+    "auc": 0.9941712204007286,
+    "tp": 245,
+    "tn": 122,
+    "fp": 0,
+    "fn": 115
+  },
+  "train_seconds": 11.971214294433594,
+  "seconds_per_epoch": 0.7445671856403351
+}

@@ -1,0 +1,37 @@
+{
+  "run": "pqc_n8_pi_nobn_seed4",
+  "best_epoch": 5,
+  "epochs_run": 15,
+  "test_loss": 0.720521092414856,
+  "test": {
+    "n": 482,
+    "correct": 360,
+    "accuracy": 0.7468879668049793,
+    "sensitivity": 0.6611111111111111,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8305555555555555,
+    "f1_malignant": 0.7959866220735786,
+    "f1_macro": 0.7313266443701226,
+    "auc": 0.967235883424408,
+    "tp": 238,
+    "tn": 122,
+    "fp": 0,
+    "fn": 122
+  },
+  "train_seconds": 15.365104675292969,
+  "seconds_per_epoch": 1.0198095639546711,
+  "branch_ablation": {
+    "full": 0.7468879668049793,
+    "mean_replaced": 0.7614108324050903,
+    "permuted_mean": 0.7532157957553863,
+    "permuted_sd": 0.005847798876586564,
+    "branch_output_sd": 0.36527764797210693
+  },
+  "circuit_diagnostics": {
+    "mean_abs_tanh": 0.9398040771484375,
+    "frac_abs_tanh_gt_0_9": 0.9024896621704102,
+    "readout_variance_across_images": 0.39603903889656067,
+    "meyer_wallach_mean": 0.2511516809463501,
+    "mean_pairwise_fidelity": 0.5321846604347229
+  }
+}

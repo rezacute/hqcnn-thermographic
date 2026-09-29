@@ -1,0 +1,30 @@
+{
+  "run": "mlp_twin_n8_pi4_bn_seed1",
+  "best_epoch": 1,
+  "epochs_run": 11,
+  "test_loss": 0.6406676173210144,
+  "test": {
+    "n": 482,
+    "correct": 355,
+    "accuracy": 0.7365145228215768,
+    "sensitivity": 0.6527777777777778,
+    "specificity": 0.9836065573770492,
+    "balanced_accuracy": 0.8181921675774135,
+    "f1_malignant": 0.7872696817420436,
+    "f1_macro": 0.7206103177102589,
+    "auc": 0.852367941712204,
+    "tp": 235,
+    "tn": 120,
+    "fp": 2,
+    "fn": 125
+  },
+  "train_seconds": 8.29679012298584,
+  "seconds_per_epoch": 0.750671776858243,
+  "branch_ablation": {
+    "full": 0.7365145228215768,
+    "mean_replaced": 0.6887966990470886,
+    "permuted_mean": 0.6585062652826309,
+    "permuted_sd": 0.007947355103203744,
+    "branch_output_sd": 0.23050618171691895
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "run": "pqc_mha_noent_n8_pi4_bn_seed2",
+  "best_epoch": 15,
+  "epochs_run": 25,
+  "test_loss": 1.114180088043213,
+  "test": {
+    "n": 482,
+    "correct": 258,
+    "accuracy": 0.5352697095435685,
+    "sensitivity": 0.37777777777777777,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.6888888888888889,
+    "f1_malignant": 0.5483870967741935,
+    "f1_macro": 0.5348773090708574,
+    "auc": 0.9548269581056467,
+    "tp": 136,
+    "tn": 122,
+    "fp": 0,
+    "fn": 224
+  },
+  "train_seconds": 25.294391870498657,
+  "seconds_per_epoch": 1.0069780540466309,
+  "branch_ablation": {
+    "full": 0.5352697095435685,
+    "mean_replaced": 0.271784245967865,
+    "permuted_mean": 0.41286310106515883,
+    "permuted_sd": 0.014452461436244391,
+    "branch_output_sd": 0.8462665677070618
+  }
+}

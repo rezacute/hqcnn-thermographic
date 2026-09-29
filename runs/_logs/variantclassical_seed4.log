@@ -1,0 +1,15 @@
+[run] classical_seed4  params={'total': 11308866, 'backbone': 11176512, 'head': 132354, 'branch': 0, 'circuit': 0}  device=NVIDIA RTX PRO 6000 Blackwell Server Edition
+  epoch  1  train 0.7234/0.5577  val 0.6955/0.5400  auc 0.4441  1.5s
+  epoch  2  train 0.6018/0.7103  val 0.6610/0.6250  auc 0.6720  0.7s
+  epoch  3  train 0.5345/0.7608  val 0.6736/0.6700  auc 0.7170  0.7s
+  epoch  4  train 0.4327/0.8546  val 0.7048/0.6050  auc 0.7185  0.7s
+  epoch  5  train 0.4105/0.8666  val 0.7872/0.5850  auc 0.6855  0.7s
+  epoch  6  train 0.3888/0.8798  val 0.8920/0.5650  auc 0.6368  0.7s
+  epoch  7  train 0.3793/0.9038  val 0.8610/0.5900  auc 0.6427  0.7s
+  epoch  8  train 0.3409/0.9207  val 0.8615/0.5700  auc 0.6241  0.7s
+  epoch  9  train 0.3325/0.9207  val 0.8996/0.5900  auc 0.6067  0.7s
+  epoch 10  train 0.3293/0.9267  val 1.1269/0.5200  auc 0.5452  0.7s
+  epoch 11  train 0.2989/0.9555  val 1.0611/0.5550  auc 0.5417  0.7s
+  epoch 12  train 0.3066/0.9507  val 1.0359/0.5550  auc 0.5403  0.7s
+  epoch 13  train 0.3037/0.9507  val 1.0776/0.5600  auc 0.5380  0.7s
+[done] classical_seed4: test acc 0.7822  auc 0.9217  (0.2 min)

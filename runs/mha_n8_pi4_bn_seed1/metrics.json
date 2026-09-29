@@ -1,0 +1,30 @@
+{
+  "run": "mha_n8_pi4_bn_seed1",
+  "best_epoch": 12,
+  "epochs_run": 22,
+  "test_loss": 0.7480161190032959,
+  "test": {
+    "n": 482,
+    "correct": 360,
+    "accuracy": 0.7468879668049793,
+    "sensitivity": 0.6611111111111111,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8305555555555555,
+    "f1_malignant": 0.7959866220735786,
+    "f1_macro": 0.7313266443701226,
+    "auc": 0.9190801457194899,
+    "tp": 238,
+    "tn": 122,
+    "fp": 0,
+    "fn": 122
+  },
+  "train_seconds": 16.176774501800537,
+  "seconds_per_epoch": 0.7290967269377275,
+  "branch_ablation": {
+    "full": 0.7468879668049793,
+    "mean_replaced": 0.7821577191352844,
+    "permuted_mean": 0.507365170121193,
+    "permuted_sd": 0.023563696969342657,
+    "branch_output_sd": 1.292236566543579
+  }
+}

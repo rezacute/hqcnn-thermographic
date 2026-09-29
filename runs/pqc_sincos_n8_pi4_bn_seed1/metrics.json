@@ -1,0 +1,30 @@
+{
+  "run": "pqc_sincos_n8_pi4_bn_seed1",
+  "best_epoch": 24,
+  "epochs_run": 30,
+  "test_loss": 0.7290018200874329,
+  "test": {
+    "n": 482,
+    "correct": 363,
+    "accuracy": 0.7531120331950207,
+    "sensitivity": 0.6694444444444444,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8347222222222221,
+    "f1_malignant": 0.8019966722129783,
+    "f1_macro": 0.7370864903764616,
+    "auc": 0.9276639344262295,
+    "tp": 241,
+    "tn": 122,
+    "fp": 0,
+    "fn": 119
+  },
+  "train_seconds": 32.671732664108276,
+  "seconds_per_epoch": 1.0856316963831583,
+  "branch_ablation": {
+    "full": 0.7531120331950207,
+    "mean_replaced": 0.771784245967865,
+    "permuted_mean": 0.5950207859277725,
+    "permuted_sd": 0.022673187986087008,
+    "branch_output_sd": 0.9448027014732361
+  }
+}

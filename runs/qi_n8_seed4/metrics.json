@@ -1,0 +1,30 @@
+{
+  "run": "qi_n8_seed4",
+  "best_epoch": 3,
+  "epochs_run": 13,
+  "test_loss": 0.4748152196407318,
+  "test": {
+    "n": 482,
+    "correct": 400,
+    "accuracy": 0.8298755186721992,
+    "sensitivity": 0.7722222222222223,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8861111111111111,
+    "f1_malignant": 0.8714733542319749,
+    "f1_macro": 0.8099698059503433,
+    "auc": 0.9101548269581057,
+    "tp": 278,
+    "tn": 122,
+    "fp": 0,
+    "fn": 82
+  },
+  "train_seconds": 10.311406135559082,
+  "seconds_per_epoch": 0.7883460888495812,
+  "branch_ablation": {
+    "full": 0.8298755186721992,
+    "mean_replaced": 0.8298755884170532,
+    "permuted_mean": 0.8298755884170532,
+    "permuted_sd": 0.0,
+    "branch_output_sd": 0.04255791753530502
+  }
+}

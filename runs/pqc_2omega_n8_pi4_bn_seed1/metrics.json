@@ -1,0 +1,30 @@
+{
+  "run": "pqc_2omega_n8_pi4_bn_seed1",
+  "best_epoch": 2,
+  "epochs_run": 12,
+  "test_loss": 0.6414099335670471,
+  "test": {
+    "n": 482,
+    "correct": 332,
+    "accuracy": 0.6887966804979253,
+    "sensitivity": 0.5833333333333334,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.7916666666666667,
+    "f1_malignant": 0.7368421052631579,
+    "f1_macro": 0.6780657226823403,
+    "auc": 0.9260928961748633,
+    "tp": 210,
+    "tn": 122,
+    "fp": 0,
+    "fn": 150
+  },
+  "train_seconds": 13.909146308898926,
+  "seconds_per_epoch": 1.1546206672986348,
+  "branch_ablation": {
+    "full": 0.6887966804979253,
+    "mean_replaced": 0.632780134677887,
+    "permuted_mean": 0.5780083328485489,
+    "permuted_sd": 0.01769928466944659,
+    "branch_output_sd": 1.0794084072113037
+  }
+}

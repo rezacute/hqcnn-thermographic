@@ -1,0 +1,15 @@
+[run] mlp_twin_n8_pi4_bn_seed2  params={'total': 11321873, 'backbone': 11176512, 'head': 140546, 'branch': 4815, 'circuit': 0}  device=NVIDIA RTX PRO 6000 Blackwell Server Edition
+  epoch  1  train 0.6560/0.6250  val 0.6800/0.5750  auc 0.5607  1.5s
+  epoch  2  train 0.5089/0.7873  val 0.7106/0.6300  auc 0.6330  0.7s
+  epoch  3  train 0.4213/0.8654  val 0.7235/0.6500  auc 0.6756  0.7s
+  epoch  4  train 0.3851/0.8798  val 1.0234/0.5800  auc 0.6022  0.7s
+  epoch  5  train 0.3462/0.9123  val 0.9675/0.6200  auc 0.6023  0.7s
+  epoch  6  train 0.3205/0.9291  val 0.9730/0.6150  auc 0.5970  0.7s
+  epoch  7  train 0.3297/0.9243  val 1.0058/0.5800  auc 0.6018  0.7s
+  epoch  8  train 0.3010/0.9423  val 0.9341/0.6300  auc 0.6420  0.7s
+  epoch  9  train 0.2976/0.9543  val 0.9224/0.6250  auc 0.6283  0.7s
+  epoch 10  train 0.2971/0.9471  val 1.1050/0.5850  auc 0.5930  0.7s
+  epoch 11  train 0.2742/0.9700  val 1.0829/0.5700  auc 0.5989  0.7s
+  epoch 12  train 0.2634/0.9724  val 1.0536/0.5700  auc 0.5856  0.7s
+  epoch 13  train 0.2698/0.9700  val 1.1147/0.5850  auc 0.5901  0.7s
+[done] mlp_twin_n8_pi4_bn_seed2: test acc 0.6950  auc 0.9527  (0.2 min)

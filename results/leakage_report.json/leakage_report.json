@@ -1,0 +1,57 @@
+{
+  "sizes": {
+    "train": 1022,
+    "val": 260,
+    "test": 240
+  },
+  "exact_duplicates_in_train": {
+    "val": 0,
+    "test": 0
+  },
+  "unrelated_pair_distance": {
+    "p1": 5.98,
+    "p5": 17.0,
+    "median": 47.0
+  },
+  "val_nearest_train_distance": {
+    "median": 15.0,
+    "p10": 10.0,
+    "n_below_unrelated_p1": 0,
+    "n_identical_hash": 0,
+    "n_within_8_bits": 14,
+    "n_within_16_bits": 176,
+    "frac_nearest_same_label": 0.4576923076923077
+  },
+  "test_nearest_train_distance": {
+    "median": 12.0,
+    "p10": 6.0,
+    "n_below_unrelated_p1": 10,
+    "n_identical_hash": 0,
+    "n_within_8_bits": 51,
+    "n_within_16_bits": 201,
+    "frac_nearest_same_label": 0.22916666666666666
+  },
+  "example_file_names": {
+    "train": [
+      "PAC_16_PAC_16_DN0-dir.png",
+      "PAC_16_PAC_16_DN0-esq.png",
+      "PAC_16_PAC_16_DN1-dir.png",
+      "PAC_16_PAC_16_DN1-esq.png",
+      "PAC_16_PAC_16_DN10-dir.png"
+    ],
+    "val": [
+      "PAC_11_PAC_11_DN0-dir.png",
+      "PAC_11_PAC_11_DN0-esq.png",
+      "PAC_11_PAC_11_DN1-dir.png",
+      "PAC_11_PAC_11_DN1-esq.png",
+      "PAC_11_PAC_11_DN10-dir.png"
+    ],
+    "test": [
+      "PAC_14_PAC_14_DN0-dir.png",
+      "PAC_14_PAC_14_DN0-esq.png",
+      "PAC_14_PAC_14_DN1-dir.png",
+      "PAC_14_PAC_14_DN1-esq.png",
+      "PAC_14_PAC_14_DN10-dir.png"
+    ]
+  }
+}

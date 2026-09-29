@@ -1,0 +1,14 @@
+[run] pqc_noent_n8_pi4_bn_seed4  params={'total': 11321778, 'backbone': 11176512, 'head': 140546, 'branch': 4720, 'circuit': 40}  device=NVIDIA RTX PRO 6000 Blackwell Server Edition
+  epoch  1  train 0.7009/0.5841  val 0.6748/0.5850  auc 0.5672  1.9s
+  epoch  2  train 0.5359/0.7548  val 0.6769/0.6250  auc 0.6274  0.9s
+  epoch  3  train 0.4488/0.8389  val 0.7118/0.6150  auc 0.6418  0.9s
+  epoch  4  train 0.3834/0.8750  val 0.7956/0.5950  auc 0.6329  1.0s
+  epoch  5  train 0.3657/0.9087  val 0.9783/0.6150  auc 0.6049  1.0s
+  epoch  6  train 0.3420/0.9231  val 0.9250/0.5750  auc 0.5829  0.9s
+  epoch  7  train 0.3381/0.9327  val 1.0430/0.6100  auc 0.6110  1.0s
+  epoch  8  train 0.3167/0.9471  val 0.9952/0.6150  auc 0.6085  1.0s
+  epoch  9  train 0.3064/0.9447  val 1.0613/0.5950  auc 0.5677  1.0s
+  epoch 10  train 0.2956/0.9531  val 1.1402/0.5950  auc 0.5162  1.0s
+  epoch 11  train 0.2858/0.9603  val 1.1353/0.5850  auc 0.5158  0.9s
+  epoch 12  train 0.2765/0.9651  val 1.0237/0.6050  auc 0.5680  1.0s
+[done] pqc_noent_n8_pi4_bn_seed4: test acc 0.7220  auc 0.9464  (0.2 min)
