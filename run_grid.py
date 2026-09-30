@@ -13,8 +13,13 @@ Grids
   full    core + sweep + fixes      (14 configurations)
   quick   core only                 (use with --seeds 0,1,2 for a first look)
 
-Finished runs (metrics.json present) are skipped, so the command can be re-run after an
-interruption. One job per GPU at a time; logs go to RUNS/_logs/.
+Circuit backend (--cudaq)
+  n8      every 8-qubit PQC configuration (core pqc and pqc_noent, and the fixes) runs its
+          circuits through CUDA Quantum; the qubit sweep uses the exact PyTorch simulator,
+          which gives identical readouts and gradients (verify_simulator.py)   [default]
+  core    only the core pqc and pqc_noent runs use CUDA Quantum
+  all     every PQC run uses CUDA Quantum (slow at 12-16 qubits)
+  none    every PQC run uses the PyTorch simulator
 """
 from __future__ import annotations
 
@@ -53,10 +58,30 @@ def main():
     ap.add_argument("--seeds", default="0,1,2,3,4")
     ap.add_argument("--gpus", default="0", help="comma-separated GPU ids, or 'cpu'")
     ap.add_argument("--extra", default="", help="extra arguments passed to train.py, quoted")
+    ap.add_argument("--cudaq", choices=["n8", "core", "all", "none"], default="n8")
+    ap.add_argument("--cudaq-target", default=None, help="passed to train.py (default nvidia on GPU)")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
-    jobs = [(cfg, int(s)) for s in a.seeds.split(",") for cfg in GRIDS[a.grid]]
+    def use_cudaq(cfg):
+        if cfg.get("variant") not in ("pqc", "pqc_noent") or a.cudaq == "none":
+            return False
+        n8 = cfg.get("n_qubits", 8) == 8
+        if a.cudaq == "all":
+            return True
+        if a.cudaq == "core":
+            return n8 and "enc_scale" not in cfg and not cfg.get("no_bn")
+        return n8
+
+    def with_backend(cfg):
+        if not use_cudaq(cfg):
+            return cfg
+        extra = dict(pqc_backend="cudaq")
+        if a.cudaq_target:
+            extra["cudaq_target"] = a.cudaq_target
+        return {**cfg, **extra}
+
+    jobs = [(with_backend(cfg), int(s)) for s in a.seeds.split(",") for cfg in GRIDS[a.grid]]
     here = Path(__file__).resolve().parent
     logs = Path(a.runs) / "_logs"
     logs.mkdir(parents=True, exist_ok=True)

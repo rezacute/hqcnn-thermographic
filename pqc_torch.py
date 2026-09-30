@@ -203,12 +203,21 @@ class PQCBranch(nn.Module):
     enc_scale, batchnorm and entangle are exposed so the paper's "training fixes"
     (pi -> pi/4 encoding, BatchNorm) and the role of entanglement can be ablated on a
     circuit that is actually simulated.
+
+    backend = "torch"  exact statevector simulation in PyTorch (autograd gradients)
+    backend = "cudaq"  every circuit, including the parameter-shift circuits of the
+                       backward pass, is executed by CUDA Quantum (see pqc_cudaq.py)
+    Both give the same readouts and gradients to floating-point precision.
     """
 
     def __init__(self, in_dim: int = 512, n_qubits: int = 8, n_layers: int = 2, out_dim: int = 32,
                  enc_scale: float = math.pi / 4, batchnorm: bool = True, entangle: bool = True,
-                 init_range: float = 0.1, cdtype: torch.dtype = torch.complex64):
+                 init_range: float = 0.1, cdtype: torch.dtype = torch.complex64,
+                 backend: str = "torch", cudaq_target: str | None = None):
         super().__init__()
+        if backend not in ("torch", "cudaq"):
+            raise ValueError("backend must be 'torch' or 'cudaq'")
+        self.backend, self.cudaq_target = backend, cudaq_target
         self.n, self.n_layers = n_qubits, n_layers
         self.enc_scale, self.entangle, self.cdtype = float(enc_scale), entangle, cdtype
         self.proj = nn.Linear(in_dim, n_qubits)
@@ -221,6 +230,9 @@ class PQCBranch(nn.Module):
         return self.enc_scale * torch.tanh(self.proj(h.to(self.proj.weight.dtype)))
 
     def measurements(self, h: torch.Tensor) -> torch.Tensor:
+        if self.backend == "cudaq":
+            from pqc_cudaq import cudaq_expectations
+            return cudaq_expectations(self.angles(h), self.theta, self.theta_final, self.entangle, self.cudaq_target)
         return simulate(self.angles(h), self.theta, self.theta_final, self.entangle, self.cdtype)
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:

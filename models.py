@@ -24,6 +24,9 @@ import math
 
 import torch
 import torch.nn as nn
+# torchvision (and the Triton/LLVM libraries it loads) must be imported before CUDA-Q:
+# loading them after CUDA-Q crashes with some builds (see cudaq_kernel.py).
+from torchvision import models as tv_models
 
 from pqc_torch import MLPTwinBranch, PQCBranch
 
@@ -79,15 +82,14 @@ def make_head(d_in: int, dropout: float) -> nn.Sequential:
 
 
 def make_backbone(pretrained: bool = True) -> nn.Module:
-    from torchvision import models
-    net = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
+    net = tv_models.resnet18(weights=tv_models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
     net.fc = nn.Identity()
     return net
 
 
 class HybridNet(nn.Module):
     def __init__(self, variant="classical", n_qubits=8, n_layers=2, enc_scale=math.pi / 4,
-                 batchnorm=True, dropout=0.5, pretrained=True):
+                 batchnorm=True, dropout=0.5, pretrained=True, pqc_backend="torch", cudaq_target=None):
         super().__init__()
         if variant not in VARIANTS:
             raise ValueError(f"variant must be one of {VARIANTS}")
@@ -99,7 +101,7 @@ class HybridNet(nn.Module):
             self.branch = QIBranch(n_qubits=n_qubits, n_layers=n_layers, input_dim=512)
         elif variant in ("pqc", "pqc_noent"):
             self.branch = PQCBranch(512, n_qubits, n_layers, 32, enc_scale, batchnorm,
-                                    entangle=(variant == "pqc"))
+                                    entangle=(variant == "pqc"), backend=pqc_backend, cudaq_target=cudaq_target)
         else:
             self.branch = MLPTwinBranch(512, n_qubits, 32, enc_scale, batchnorm)
         self.head = make_head(512 + (0 if self.branch is None else 32), dropout)

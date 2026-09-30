@@ -8,6 +8,9 @@ verify_simulator.py - independent checks of pqc_torch.py.
   4. Autograd gradients vs the parameter-shift rule, for every circuit and encoding angle.
   5. torch.autograd.gradcheck in double precision.
   6. Product-state ablation: without CNOTs, <Z_k Z_k+1> = <Z_k><Z_k+1>.
+  7. PQCBranch bookkeeping: 5n circuit parameters, shared-angle gradient = sum over images.
+  8. The CUDA-Q training back end (pqc_cudaq.py: cudaq.observe forward, parameter-shift
+     backward) gives the same readouts and gradients as the PyTorch simulator.
 
 Exit code is non-zero if any check fails.  Run:  python verify_simulator.py
 """
@@ -16,6 +19,11 @@ import sys
 
 import numpy as np
 import torch
+
+try:  # load torchvision before CUDA-Q (see cudaq_kernel.py)
+    import torchvision  # noqa: F401
+except Exception:
+    pass
 
 from pqc_torch import (PQCBranch, n_circuit_params, parameter_shift_gradient, ring_cnot_pairs,
                        simulate, simulate_state, unpack)
@@ -204,6 +212,33 @@ flat = torch.cat([phi, m.theta.detach().reshape(1, -1).expand(6, -1),
 g_shift = parameter_shift_gradient(lambda f: simulate(*unpack(f, 4, L), cdtype=torch.complex128).sum(1), flat)
 g_shift = g_shift[:, 4:4 + 16].sum(0).reshape(2, 4, 2)          # shared parameter = sum over samples
 check("shared theta gradient = sum of per-sample shift gradients", (g_auto - g_shift).abs().max().item(), 1e-10)
+
+# ---------------------------------------------------------------- 8. CUDA-Q training backend
+print("\n8. CUDA-Q training backend (forward via cudaq.observe, parameter-shift backward) vs PyTorch")
+try:
+    import cudaq  # noqa: F401
+    target = "nvidia" if torch.cuda.is_available() else "qpp-cpu"
+    tol = 1e-5 if target == "nvidia" else 1e-10          # the GPU target runs in single precision
+    for n in (1, 2, 3, 5):
+        for entangle in (True, False):
+            torch.manual_seed(n)
+            ref = PQCBranch(n_qubits=n, entangle=entangle, cdtype=torch.complex128).double()
+            cq = PQCBranch(n_qubits=n, entangle=entangle, backend="cudaq", cudaq_target=target).double()
+            cq.load_state_dict(ref.state_dict())
+            h = torch.randn(3, 512, dtype=torch.float64)
+            w = torch.randn(3, 2 * n - 1, dtype=torch.float64)          # random upstream gradient
+            outs, grads = [], []
+            for m in (ref, cq):
+                m.zero_grad()
+                e = m.measurements(h)
+                (e * w).sum().backward()
+                outs.append(e.detach())
+                grads.append(torch.cat([m.theta.grad.reshape(-1), m.theta_final.grad, m.proj.weight.grad.reshape(-1)]))
+            check(f"n={n} entangle={entangle}: readouts", (outs[0] - outs[1]).abs().max().item(), tol)
+            check(f"n={n} entangle={entangle}: gradients (angles + encoding layer)",
+                  (grads[0] - grads[1]).abs().max().item(), tol)
+except Exception as exc:
+    print(f"  cudaq unavailable ({type(exc).__name__}: {exc}) - skipped")
 
 print("\nALL CHECKS PASSED" if not failures else f"\n{len(failures)} CHECK(S) FAILED: {failures}")
 sys.exit(1 if failures else 0)

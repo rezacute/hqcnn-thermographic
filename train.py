@@ -114,6 +114,10 @@ def main():
     ap.add_argument("--n-layers", type=int, default=2)
     ap.add_argument("--enc-scale", choices=list(SCALES), default="pi/4")
     ap.add_argument("--no-bn", action="store_true", help="drop the BatchNorm after the circuit readout")
+    ap.add_argument("--pqc-backend", choices=["torch", "cudaq"], default="torch",
+                    help="cudaq: run every circuit (forward and parameter-shift backward) with CUDA Quantum")
+    ap.add_argument("--cudaq-target", default=None,
+                    help="CUDA-Q target (default: nvidia on a GPU machine, qpp-cpu otherwise)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--patience", type=int, default=10)
@@ -155,8 +159,12 @@ def main():
     train_eval_loader, val_loader, test_loader = plain("train"), plain("val"), plain("test")
 
     seed_everything(a.seed)          # same seed for every variant (data order and augmentation are identical)
+    if a.pqc_backend == "cudaq" and a.cudaq_target is None:
+        a.cudaq_target = "nvidia" if device.type == "cuda" else "qpp-cpu"
     model = HybridNet(a.variant, a.n_qubits, a.n_layers, SCALES[a.enc_scale], not a.no_bn, a.dropout,
-                      pretrained=not a.no_pretrained).to(device)
+                      pretrained=not a.no_pretrained,
+                      pqc_backend=a.pqc_backend if a.variant in ("pqc", "pqc_noent") else "torch",
+                      cudaq_target=a.cudaq_target).to(device)
     groups = model.param_groups(a.lr_backbone, a.lr_branch, a.lr_head, a.weight_decay)
     opt = torch.optim.AdamW([{k: v for k, v in g.items() if k != "name"} for g in groups])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=a.epochs)
@@ -164,6 +172,7 @@ def main():
     criterion = nn.CrossEntropyLoss(label_smoothing=a.label_smoothing)
 
     config = dict(vars(a), run=out.name, enc_scale_value=SCALES[a.enc_scale],
+                  circuit_backend=(a.pqc_backend if a.variant in ("pqc", "pqc_noent") else None),
                   parameters=model.count_parameters(), param_groups=[g["name"] for g in groups],
                   torch=torch.__version__, python=platform.python_version(),
                   device_name=torch.cuda.get_device_name(device) if device.type == "cuda" else platform.processor(),
@@ -219,6 +228,12 @@ def main():
     metrics = dict(run=out.name, best_epoch=best_epoch, epochs_run=len(history), test_loss=test_loss,
                    test=test_m, train_seconds=train_seconds,
                    seconds_per_epoch=float(np.mean([h["seconds"] for h in history])))
+    if a.pqc_backend == "cudaq" and isinstance(model.branch, PQCBranch):
+        import re, cudaq
+        from pqc_cudaq import _RUNNERS
+        version = re.search(r"\d+\.\d+(\.\d+)?", str(getattr(cudaq, "__version__", "")))
+        metrics["cudaq"] = dict(target=a.cudaq_target, version=version.group(0) if version else "unknown",
+                                circuits_executed=int(sum(r.circuits for r in _RUNNERS.values())))
 
     # ------------------------------------------------ does the branch matter? (test-time ablation)
     if Q is not None:
