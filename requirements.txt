@@ -53,3 +53,5 @@ black>=23.0.0
 # Quantum (optional)
 qiskit>=0.45.0
 qiskit-machine-learning>=0.7.0
+# CUDA-Q backend (optional; pip install cudaq to enable --pqc-backend cudaq)
+# cudaq>=0.16.0        # pull this in to run circuits on the NVIDIA cuStateVec target
