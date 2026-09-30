@@ -1,0 +1,42 @@
+{
+  "run": "pqc_n8_pi4_bn_seed1",
+  "best_epoch": 13,
+  "epochs_run": 30,
+  "test_loss": 0.6960118412971497,
+  "test": {
+    "n": 482,
+    "correct": 375,
+    "accuracy": 0.7780082987551867,
+    "sensitivity": 0.7027777777777777,
+    "specificity": 1.0,
+    "balanced_accuracy": 0.8513888888888889,
+    "f1_malignant": 0.8254486133768353,
+    "f1_macro": 0.7603026542667652,
+    "auc": 0.948952641165756,
+    "tp": 253,
+    "tn": 122,
+    "fp": 0,
+    "fn": 107
+  },
+  "train_seconds": 1832.994868516922,
+  "seconds_per_epoch": 61.096362169583635,
+  "cudaq": {
+    "target": "nvidia",
+    "version": "0.16.0",
+    "circuits_executed": 2028242
+  },
+  "branch_ablation": {
+    "full": 0.7780082987551867,
+    "mean_replaced": 0.7074689269065857,
+    "permuted_mean": 0.6939834445714951,
+    "permuted_sd": 0.014677979022167248,
+    "branch_output_sd": 0.7840813398361206
+  },
+  "circuit_diagnostics": {
+    "mean_abs_tanh": 0.966947078704834,
+    "frac_abs_tanh_gt_0_9": 0.9206432104110718,
+    "readout_variance_across_images": 0.001531941001303494,
+    "meyer_wallach_mean": 0.7551209330558777,
+    "mean_pairwise_fidelity": 0.8107322454452515
+  }
+}
