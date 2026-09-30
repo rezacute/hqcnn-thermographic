@@ -1,0 +1,126 @@
+{
+  "info": {
+    "device": "cuda",
+    "torch": "2.13.0+cu130",
+    "threads": 4,
+    "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "warmup": 20,
+    "iters": 100,
+    "pqc_backend": "cudaq",
+    "cudaq_target": "nvidia"
+  },
+  "models": {
+    "classical": {
+      "parameters": {
+        "total": 11308866,
+        "backbone": 11176512,
+        "head": 132354,
+        "branch": 0,
+        "circuit": 0
+      },
+      "batch1": {
+        "median_ms": 1.2481440789997578,
+        "p90_ms": 1.2674564495682716,
+        "iters": 100,
+        "per_image_ms": 1.2481440789997578,
+        "images_per_s": 801.1895556171557,
+        "peak_mem_mb": 91.189453125
+      },
+      "batch32": {
+        "median_ms": 2.6496420614421368,
+        "p90_ms": 2.6573026552796364,
+        "iters": 100,
+        "per_image_ms": 0.08280131442006677,
+        "images_per_s": 12077.10296634677,
+        "peak_mem_mb": 307.98046875
+      }
+    },
+    "qi": {
+      "parameters": {
+        "total": 11324746,
+        "backbone": 11176512,
+        "head": 140546,
+        "branch": 7688,
+        "circuit": 0,
+        "branch_effective": 7416
+      },
+      "batch1": {
+        "median_ms": 1.7226147465407848,
+        "p90_ms": 1.7763376235961914,
+        "iters": 100,
+        "per_image_ms": 1.7226147465407848,
+        "images_per_s": 580.5128523415458,
+        "peak_mem_mb": 92.62744140625
+      },
+      "batch32": {
+        "median_ms": 2.7194777503609657,
+        "p90_ms": 2.7251141145825386,
+        "iters": 100,
+        "per_image_ms": 0.08498367969878018,
+        "images_per_s": 11766.965181367095,
+        "peak_mem_mb": 309.41845703125
+      }
+    },
+    "pqc": {
+      "parameters": {
+        "total": 11321778,
+        "backbone": 11176512,
+        "head": 140546,
+        "branch": 4720,
+        "circuit": 40
+      },
+      "batch1": {
+        "median_ms": 3.3575748093426228,
+        "p90_ms": 3.382769413292408,
+        "iters": 100,
+        "per_image_ms": 3.3575748093426228,
+        "images_per_s": 297.83401913114466,
+        "peak_mem_mb": 92.37060546875
+      },
+      "batch32": {
+        "median_ms": 38.02979178726673,
+        "p90_ms": 38.74628432095051,
+        "iters": 100,
+        "per_image_ms": 1.1884309933520854,
+        "images_per_s": 841.4455745380744,
+        "peak_mem_mb": 309.73583984375
+      }
+    }
+  },
+  "branch_only": {},
+  "cudaq": {
+    "target": "nvidia",
+    "4": {
+      "per_image_ms": 0.5030045285820961,
+      "p90_ms": 0.6555346772074699
+    },
+    "8": {
+      "per_image_ms": 0.9156749583780766,
+      "p90_ms": 0.9310226887464523
+    },
+    "12": {
+      "per_image_ms": 1.5121446922421455,
+      "p90_ms": 1.5304535627365112
+    },
+    "16": {
+      "per_image_ms": 1.8862192519009113,
+      "p90_ms": 1.936124637722969
+    }
+  },
+  "cudaq_training": {
+    "target": "nvidia",
+    "batch": 32,
+    "4": {
+      "seconds_per_step": 0.6424756059423089,
+      "circuits_per_step": 1312,
+      "ms_per_circuit": 0.4896917728218818,
+      "minutes_per_epoch_branch": 0.2784060959083339
+    },
+    "8": {
+      "seconds_per_step": 2.8952929880470037,
+      "circuits_per_step": 2592,
+      "ms_per_circuit": 1.1170111836601095,
+      "minutes_per_epoch_branch": 1.254626961487035
+    }
+  }
+}
